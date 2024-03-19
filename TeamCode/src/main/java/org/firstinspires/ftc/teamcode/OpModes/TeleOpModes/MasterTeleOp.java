@@ -13,6 +13,13 @@ import com.qualcomm.robotcore.util.Range;
 
 @TeleOp
 
+/***
+ * @IMPORTANT - This code represents 13822 TeleOp or Manual Operated code
+ * This code holds many different functions and variables, use
+ *{@link
+ */
+
+
 public class MasterTeleOp extends LinearOpMode {
 
     @Override
@@ -98,9 +105,7 @@ public class MasterTeleOp extends LinearOpMode {
 
             // When right bumper is pressed, the speed is increased and inverse for left bumper
             // if left or right bumper is pressed and it's either slow or fast, returns to normal speed
-            /***
-             * @IMPORTANT: This code will only cycle through the modes. To change from fast to slow, you have to press left_bumper twice
-             */
+
             if (gamepad1.right_bumper)
                 range = speed;
             else if(gamepad1.left_bumper)
