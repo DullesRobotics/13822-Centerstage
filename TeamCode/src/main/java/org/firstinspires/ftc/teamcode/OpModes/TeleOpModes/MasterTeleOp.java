@@ -101,22 +101,13 @@ public class MasterTeleOp extends LinearOpMode {
             /***
              * @IMPORTANT: This code will only cycle through the modes. To change from fast to slow, you have to press left_bumper twice
              */
-            if((gamepad1.left_bumper || gamepad1.right_bumper) && (slow || fast)){
-                fast = false;
-                slow = false;
-            }
-            else if (gamepad1.right_bumper)
-                fast = true;
-            else if(gamepad1.left_bumper)
-                slow = true;
-
-            // speed changes depending on mode
-            if (fast)
+            if (gamepad1.right_bumper)
                 range = speed;
-            else if (slow)
+            else if(gamepad1.left_bumper)
                 range = superSlowSpeed;
             else
                 range = 0.75;
+
 
 
             if(gamepad1.dpad_up)
