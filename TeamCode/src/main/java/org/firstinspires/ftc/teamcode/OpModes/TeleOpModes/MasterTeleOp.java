@@ -17,7 +17,10 @@ import com.qualcomm.robotcore.util.Range;
  * @IMPORTANT - This code represents 13822 TeleOp or Manual Operated code
  * This code holds many different functions and variables, use it to locate throughout
  * * @Variables
- * * @
+ * * @Movement
+ * * @Intake
+ * * @Bucket
+ * * @Simple Methods
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -88,12 +91,13 @@ public class MasterTeleOp extends LinearOpMode {
         while (opModeIsActive()) {
 
             /*** @Movement ***/
-            /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+            /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
              * This code focuses on robot movement
              * * First part has a focus on different movement speeds based on the situation
              * * The second part has a focus on the general movement of the robot
-             * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+             * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+            // Speed control, bumper controls how fast/slow the robot move, else moves to regular speed
             if (gamepad1.right_bumper)
                 range = speed;
             else if(gamepad1.left_bumper)
@@ -101,10 +105,18 @@ public class MasterTeleOp extends LinearOpMode {
             else
                 range = 0.75;
 
+            // maps the joysticks to move robot, triggers to strafe
             double leftJoy = gamepad1.left_stick_y;
             double rightJoy = gamepad1.right_stick_y;
             double leftTrigger = gamepad1.left_trigger;
             double rightTrigger = gamepad1.right_trigger;
+
+            /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+             * Movement changes based on task being completed
+             * * If intake is being needed, the robot switches left and right joysticks to compensate to picking up tokens
+             * Else, the right stick moves the front motor, the left stick the back motors
+             * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
             if(intakeFront) {
                 //Tank drive with trigger to strafe
                 frontLeftPower = Range.clip(leftJoy + leftTrigger - rightTrigger, -range, range);
@@ -139,7 +151,18 @@ public class MasterTeleOp extends LinearOpMode {
         telemetry.addData("Motor", "FLM Power" + frontLeftPower, "BLM Power" + backLeftPower, "FRM Power" + frontRightPower, "BRM Power" + backRightPower);
         telemetry.update();
 
+        /*** @Intake ***/
 
+        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+         * Intake is a core part of our robot, being the backbone of our robot as it takes up the tokens that are
+         * very important for this years game
+         *
+         * Our intake as such is like a system where everything else follows it
+         * * First our intake has a toggle mode that determines how our robot moves
+         * * The back of our robot contains the intake, so the motors in the back rotate to push them into a bucket
+         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+            // Toggles intake driving mode
             if(gamepad1.dpad_up)
                 intakeFront = true;
             else if(gamepad1.dpad_down)
@@ -189,7 +212,15 @@ public class MasterTeleOp extends LinearOpMode {
                 intake2.setPower(0);
             }
 
+        /*** @Bucket ***/
+        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+         * The bucket is how we move our token after getting them from the intake
+         * * The bucket can be manually controlled, or have autonomous control setting it to certian positions
+         * The bucket works with motors of an arm and servo of bucket
+         *
+         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+            // checks for manual control
             if(gamepad2.dpad_right) {
                 manual = true;
             } if(gamepad2.dpad_left){
@@ -197,6 +228,8 @@ public class MasterTeleOp extends LinearOpMode {
                 bucketPos = bucket.getPosition();
             }
 
+            // If manual, then moves the arm motor based on right and left triggers
+            // works better if both are used
             if(manual) {
                 rightLever.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -206,6 +239,7 @@ public class MasterTeleOp extends LinearOpMode {
                     rightLever.setPower(0);
                 }
 
+                // Bucket motor changes tilt based on the bumpers
                 bucket.setPosition(bucketPos);
                 if (gamepad2.right_bumper && bucketPos<=1) {
                     bucketPos += 0.0015;
@@ -217,24 +251,20 @@ public class MasterTeleOp extends LinearOpMode {
 
             }
 
+            // If automatic, then motors are just based on the bumpers
+            // Encoders help map the locations motors must snap to
             if(!manual) {
                 rightLever.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-                /*
-                if (((Math.abs(rightLever.getTargetPosition()) - Math.abs(rightLever.getCurrentPosition())) >= 25)) {
-                    power = .25;
-                } else {
-                    power = .5;
-                }
-
-                 */
-
+                // right bumper sets the bucket to drop
+                // left sets it in ready position
                 if(gamepad2.right_bumper)
                     topTarget = true;
                 else if(gamepad2.left_bumper)
                     topTarget = false;
 
-
+                // if top target, bucket goes to the position and drops all remaining tokens in there
+                // else, it goes to ready position
                 if (topTarget) {
                     rightLever.setTargetPosition(545);
                     sleep(500);
@@ -247,11 +277,14 @@ public class MasterTeleOp extends LinearOpMode {
                 rightLever.setPower(0.3);
                 rightLever.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-
-                //telemetry.addData("motor pos", rightLever.getCurrentPosition());
-
             }
 
+            /*** @Simple Methods ***/
+            /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+             * These methods are for smaller functions, important, but not much to be said
+             * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+            // 
             if (gamepad2.y) {
                 door.setPosition(.5);
             } else {
@@ -259,7 +292,9 @@ public class MasterTeleOp extends LinearOpMode {
             }
 
 
-            //hang code
+            // hang code
+            // pressing x lifts the hang, pressing y pulls the hang up, allowing the robot to suspend in the air
+            // else the hang stays stationary
             if (gamepad1.x)
                 hang.setPower(1);
             else if (gamepad1.y)
@@ -268,67 +303,13 @@ public class MasterTeleOp extends LinearOpMode {
                 hang.setPower(0);
 
             //drone code
+            // pressing the up button releases the rubberband holding thr drone letting it fly
             if (gamepad1.dpad_up)
                 drone.setPosition(0);
             else
                 drone.setPosition(0.5);
 
-
-            /*
-            //changes lever speed(bad version of pid)
-            if(Math.abs(leftLever.getCurrentPosition() - (intakeTarget +(pos*34))) > 50){
-                rightLever.setPower(.75);
-                leftLever.setPower(.75);
-            } else{
-                leftLever.setPower(.25);
-                rightLever.setPower(.25);
-            }
-
-
-             //creates a number of different positions for the arm and bucket
-            if(gamepad2.right_bumper && pos <= 3){
-                pos = pos + 3;
-                sleep(250);
-            }
-            if (gamepad2.right_bumper && pos <= max) {
-                pos++;
-                sleep(100);
-            }
-            if(gamepad2.left_bumper && pos <= 3 && pos >= 0){
-                pos = pos - 3;
-                sleep(100);
-            }
-            if (gamepad2.left_bumper && pos >= 0) {
-                pos--;
-                sleep(100);
-            }
-            if(gamepad2.right_stick_button)
-                pos = 0;
-            if(gamepad2.left_stick_button)
-                pos = max;
-
-            leftLever.setTargetPosition((int) (intakeTarget + (pos * 34)));
-            leftLever.setPower(.25);
-            leftLever.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            rightLever.setTargetPosition((int) (-intakeTarget - (pos * 34)));
-            rightLever.setPower(.25);
-            rightLever.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            bucket.setPosition((1 - ((double)pos * (double)(1/12) )));
-
-            /*
-            bucket.setPosition(bucketPos);
-            if (gamepad2.x && bucketPos<=1) {
-                bucketPos += 0.005;
-            }
-            if (gamepad2.y&& bucketPos>=0) {
-                bucketPos -= 0.005;
-            }
-            */
-
-
-
         }
-
                 // Show the elapsed game time and wheel power
                 telemetry.addData("Status", "Run Time: " + runtime.toString());
                 //telemetry.addData("Motor", "FLM Power" + frontLeftPower, "BLM Power" + backLeftPower, "FRM Power" + frontRightPower, "BRM Power" + backRightPower);
@@ -339,142 +320,3 @@ public class MasterTeleOp extends LinearOpMode {
 
 
 }
-
-
-
-
-    /*
-    @Override
-    public void init() {
-
-        telemetry.addData("Status","Initialized");
-        telemetry.update();
-
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        frontLeftMotor = hardwareMap.get(DcMotor.class,"FLM");
-        backLeftMotor = hardwareMap.get(DcMotor.class, "BLM");
-        frontRightMotor = hardwareMap.get(DcMotor.class, "FRM");
-        backRightMotor = hardwareMap.get(DcMotor.class, "BRM");
-
-        //Fot the robot to drive forward one side of the bot needs to be reversed
-        frontLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        backLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-
-
-        intake = hardwareMap.get(DcMotor.class ,"INTAKE");
-        telemetry.addData("Hardware:", "Initialized");
-
-
-    }
-
-    @Override
-    public void loop() {
-
-        // Wait for the game to start (driver presses PLAY)
-        runtime.reset();
-
-        // Setup a variable for each motor to save for telemetry
-        double frontLeftPower;
-        double backLeftPower;
-        double frontRightPower;
-        double backRightPower;
-
-        // Add bumper buttons to slow the robot speed for more accuracy
-        boolean slow = false;
-        boolean superSlow = false;
-        double slowSpeed = 0.5;
-        double superSlowSpeed = 0.25;
-        double range = 1;
-
-        if (gamepad1.right_bumper)
-            slow = true;
-        if(gamepad1.left_bumper)
-            superSlow = true;
-
-        if (slow)
-            range = slowSpeed;
-        else if (superSlow)
-            range = superSlowSpeed;
-
-
-        // Strafe with Left stick
-        /*
-        double drive = -gamepad1.left_stick_y;
-        double strafe = gamepad1.left_stick_x;
-        double turn = gamepad2.right_stick_x;
-        frontLeftPower = Range.clip(drive + turn + strafe, -1.0, 1.0);
-        backLeftPower = Range.clip(drive + turn + strafe, -1.0, 1.0);
-        frontRightPower = Range.clip(drive + turn - strafe, -1.0, 1.0);
-        backRightPower = Range.clip(drive - turn + strafe, -1.0, 1.0);
-         */
-
-
-    /*
-        //Tank drive with trigger to strafe
-        double leftJoy = gamepad1.left_stick_y;
-        double rightJoy = gamepad1.right_stick_y;
-        double leftTrigger = gamepad1.left_trigger;
-        double rightTrigger = gamepad1.right_trigger;
-        frontLeftPower = Range.clip(leftJoy + leftTrigger - rightTrigger, -range, range);
-        backLeftPower = Range.clip(leftJoy - leftTrigger + rightTrigger, -range, range);
-        frontRightPower = Range.clip(rightJoy - leftTrigger + rightTrigger, -range, range);
-        backRightPower = Range.clip(rightJoy + leftTrigger - rightTrigger, -range, range);
-
-        //send the power value to the wheel
-        frontLeftMotor.setPower(frontLeftPower);
-        backLeftMotor.setPower(backLeftPower);
-        frontRightMotor.setPower(frontRightPower);
-        backRightMotor.setPower(backRightPower);
-
-        // Show the elapsed game time and wheel power
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motor", "FLM Power" + frontLeftPower, "BLM Power" + backLeftPower, "FRM Power" + frontRightPower, "BRM Power" + backRightPower);
-        telemetry.update();
-
-
-        if (togglePressedUp && !gamepad2.dpad_up)
-            togglePressedUp = false;
-
-        if(togglePressedDown && !gamepad2.dpad_down)
-            togglePressedDown = false;
-
-        if(gamepad2.dpad_up && !togglePressedUp){
-            togglePressedUp = true;
-            if(!forward){
-                forward = true;
-            } else if(on){
-                on = false;
-            } else{
-                on = true;
-                forward = true;
-            }
-        }
-
-        if(gamepad2.dpad_down && !togglePressedDown){
-            togglePressedDown = true;
-            if(forward){
-                forward = false;
-            } else if(on){
-                on = false;
-            } else{
-                on = true;
-                forward = false;
-            }
-        }
-
-        if (on && forward){
-            intake.setPower(-1);
-        }
-        if (on && !forward){
-            intake.setPower(1);
-        }
-        intake.setPower(0);
-
-    }
-}
-
-*/
