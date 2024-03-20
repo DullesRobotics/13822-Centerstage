@@ -13,11 +13,12 @@ import com.qualcomm.robotcore.util.Range;
 
 @TeleOp
 
-/***
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * @IMPORTANT - This code represents 13822 TeleOp or Manual Operated code
- * This code holds many different functions and variables, use
- *{@link
- */
+ * This code holds many different functions and variables, use it to locate throughout
+ * * @Variables
+ * * @
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
 public class MasterTeleOp extends LinearOpMode {
@@ -25,10 +26,14 @@ public class MasterTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        //MechanumOpMode obj = new MechanumOpMode();
-        //obj.runOpMode();
+        /*** @Variables ***/
+        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+         * Define our variables here, many different types are here
+         * * First we define the hardware variables, connecting them to motors and servos that will help with completing tasks
+         * * Next we define telemetry variables, useful for movement
+         * * Last, we define general variables to be used in our code
+         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-        //declare your variables
         ElapsedTime runtime = new ElapsedTime();
         boolean on = false, forward = true, togglePressedUp = false, togglePressedDown = false;
 
@@ -61,30 +66,20 @@ public class MasterTeleOp extends LinearOpMode {
         double frontRightPower = 0;
         double backRightPower = 0;
 
-        // Add bumper buttons to slow the robot speed for more accuracy
-        boolean fast = false;
-        boolean slow = false;
+        // General variables
         double speed = 1;
         double superSlowSpeed = 0.25;
         double range = .5;
-        int liftLocation = 0;
         double bucketPos = 1;
-        int pos = 0;
-        int max = 12;
         int intakeTarget = -100;
-        double power;
         boolean manual = true;
         boolean topTarget = false;
         boolean intakeFront = true;
 
-        //leftLever.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        //rightLever.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-
         telemetry.addData("Hardware:", "Initialized");
 
 
-        // Wait for the game to start (driver presses PLAY)
+        // General startup procedure
         waitForStart();
         runtime.reset();
 
@@ -92,19 +87,12 @@ public class MasterTeleOp extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            // Strafe with Left stick
-        /*
-        double drive = -gamepad1.left_stick_y;
-        double strafe = gamepad1.left_stick_x;
-        double turn = gamepad2.right_stick_x;
-        frontLeftPower = Range.clip(drive + turn + strafe, -1.0, 1.0);
-        backLeftPower = Range.clip(drive + turn + strafe, -1.0, 1.0);
-        frontRightPower = Range.clip(drive + turn - strafe, -1.0, 1.0);
-        backRightPower = Range.clip(drive - turn + strafe, -1.0, 1.0);
-         */
-
-            // When right bumper is pressed, the speed is increased and inverse for left bumper
-            // if left or right bumper is pressed and it's either slow or fast, returns to normal speed
+            /*** @Movement ***/
+            /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+             * This code focuses on robot movement
+             * * First part has a focus on different movement speeds based on the situation
+             * * The second part has a focus on the general movement of the robot
+             * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
             if (gamepad1.right_bumper)
                 range = speed;
@@ -112,13 +100,6 @@ public class MasterTeleOp extends LinearOpMode {
                 range = superSlowSpeed;
             else
                 range = 0.75;
-
-
-
-            if(gamepad1.dpad_up)
-                intakeFront = true;
-            else if(gamepad1.dpad_down)
-                intakeFront = false;
 
             double leftJoy = gamepad1.left_stick_y;
             double rightJoy = gamepad1.right_stick_y;
@@ -159,7 +140,10 @@ public class MasterTeleOp extends LinearOpMode {
         telemetry.update();
 
 
-
+            if(gamepad1.dpad_up)
+                intakeFront = true;
+            else if(gamepad1.dpad_down)
+                intakeFront = false;
 
             //Intake controlled with a toggle from the dpad, direction can be reversed
             if (togglePressedUp && !gamepad2.dpad_up)
