@@ -284,7 +284,7 @@ public class MasterTeleOp extends LinearOpMode {
              * These methods are for smaller functions, important, but not much to be said
              * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-            // 
+            // opens outtake door
             if (gamepad2.y) {
                 door.setPosition(.5);
             } else {

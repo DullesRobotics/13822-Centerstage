@@ -33,6 +33,20 @@ import java.util.concurrent.TimeUnit;
 @Autonomous
 public class AutonBlueBackboard extends LinearOpMode {
 
+    /***
+     * @IMPORTANT - This code is used for the Autonomous period of the robot runtime
+     * This code runs when the robot is on the left side on the blue alliance
+     *
+     * The point of this code is to identify a token place in one of 3 places, a purple one
+     * Once it locates it, the robot shall intake the token and move towards the blackboard
+     * after reaching the backboard, the robot will drop the token, which is in a bucket
+     *
+     * This code has many parts to it, and its part shall be listed here
+     * * @Variables
+     ***/
+
+
+    /*** @Variables ***/
     private ElapsedTime runtime = new ElapsedTime();
     DcMotor frontLeftMotor;
     DcMotor backLeftMotor;
@@ -72,6 +86,7 @@ public class AutonBlueBackboard extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         AutonFunction functions = new AutonFunction();
 
+        /* init motors and encoders */
         intake = hardwareMap.get(DcMotor.class, "INTAKE");
         rightLever = hardwareMap.get(DcMotor.class, "RLM");
         //leftLever = hardwareMap.get(DcMotor.class, "LLM");
@@ -107,6 +122,7 @@ public class AutonBlueBackboard extends LinearOpMode {
         resetRuntime();
 
         while (opModeIsActive()) {
+            // Gathers current info and state of movement motors and robot
             telemetry.addData("Coordinate", "(" + (int) cX + ", " + (int) cY + ")");
             telemetry.addData("Distance in Inch", (getDistance(width)));
             telemetry.addData("Runtime", runtime.toString());
@@ -122,6 +138,7 @@ public class AutonBlueBackboard extends LinearOpMode {
             //sleep(1000);
             //requestOpModeStop();
 
+            /* Identifies where token is*/
             if (cX > 0 && cX < 250) {
                 left = true;
             }
@@ -134,6 +151,14 @@ public class AutonBlueBackboard extends LinearOpMode {
 
             //additionally make left the else option
             if (left) {
+                /*
+                * Drives straight and turns left
+                * Then it starts the intake to put it in the bucket
+                * moves a bit backward, stops the intake
+                * Strafes right and moves toward the blackboard
+                * drops token with bucket and moves towards a parking spot
+                * * Parking spot is towards the right
+                */
                 driveWithEncoders(.25, -80, 3000);
                 turnWithEncoders(.25, 55, true, 2500);
                 driveWithEncoders(.25, -15, 1000);
